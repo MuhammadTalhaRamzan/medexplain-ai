@@ -13,8 +13,14 @@ const config = {
   openrouter: {
     apiKey: process.env.OPENROUTER_API_KEY || '',
     baseUrl: process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1',
-    model: process.env.OPENROUTER_MODEL || 'google/gemma-4-31b-it:free',
+    model: process.env.OPENROUTER_MODEL || 'google/gemma-4-26b-a4b-it:free:',
     timeoutMs: parseInt(process.env.OPENROUTER_TIMEOUT_MS || '25000', 10),
+    // Fallback models if primary is rate-limited (ordered by reliability)
+    fallbackModels: [
+      'google/gemma-4-26b-a4b-it:free:',
+      'meta-llama/llama-2-7b:free',
+      'mistralai/mistral-7b-instruct:free'
+    ],
     // Sent as OpenRouter-recommended attribution headers.
     siteUrl: process.env.OPENROUTER_SITE_URL || 'http://localhost:5173',
     siteName: process.env.OPENROUTER_SITE_NAME || 'MedExplain AI',
@@ -33,16 +39,15 @@ const config = {
     allowedExtensions: ['.pdf', '.png', '.jpg', '.jpeg'],
   },
 
-  // OCR: EasyOCR (Python) instead of Tesseract.js. The Node backend
-  // shells out to a small Python script (Phase C) via child_process.
+  // OCR: Tesseract.js (pure JS, in-process). Switched back from
+  // EasyOCR/Python after repeated silent process deaths during model
+  // download on the dev machine (likely antivirus or network
+  // restrictions killing the python.exe subprocess) — see
+  // docs/DEVELOPMENT_PLAN.md.
   ocr: {
-    engine: 'easyocr',
-    pythonPath: process.env.PYTHON_PATH || 'python',
-    languages: (process.env.EASYOCR_LANGUAGES || 'en').split(','),
-    // EasyOCR downloads its detection/recognition models on first run,
-    // which can take minutes on a slow connection. Default raised from
-    // 20s to 3 minutes so that first-run downloads aren't killed mid-way.
-    timeoutMs: parseInt(process.env.OCR_TIMEOUT_MS || '180000', 10),
+    engine: 'tesseract.js',
+    language: process.env.TESSERACT_LANGUAGE || 'eng',
+    timeoutMs: parseInt(process.env.OCR_TIMEOUT_MS || '60000', 10),
   },
 };
 
