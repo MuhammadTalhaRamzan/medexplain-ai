@@ -1,4 +1,6 @@
 require('dotenv').config();
+const os = require('os');
+const path = require('path');
 
 const config = {
   port: parseInt(process.env.PORT || '5000', 10),
@@ -20,7 +22,13 @@ const config = {
 
   upload: {
     maxSizeBytes: parseInt(process.env.MAX_UPLOAD_SIZE_MB || '20', 10) * 1024 * 1024,
-    dir: process.env.UPLOAD_DIR || './uploads',
+    // Defaults to the OS temp dir, NOT a folder inside the project.
+    // `node --watch` watches the whole cwd recursively; a folder like
+    // `./uploads` inside the repo gets watched too, so every incoming
+    // upload triggers a server restart mid-request and kills the OCR/AI
+    // pipeline partway through. Override with UPLOAD_DIR if you want a
+    // fixed location, but keep it outside the watched project folder.
+    dir: process.env.UPLOAD_DIR || path.join(os.tmpdir(), 'medexplain-ai-uploads'),
     allowedMimeTypes: ['application/pdf', 'image/png', 'image/jpeg'],
     allowedExtensions: ['.pdf', '.png', '.jpg', '.jpeg'],
   },
@@ -31,7 +39,10 @@ const config = {
     engine: 'easyocr',
     pythonPath: process.env.PYTHON_PATH || 'python',
     languages: (process.env.EASYOCR_LANGUAGES || 'en').split(','),
-    timeoutMs: parseInt(process.env.OCR_TIMEOUT_MS || '20000', 10),
+    // EasyOCR downloads its detection/recognition models on first run,
+    // which can take minutes on a slow connection. Default raised from
+    // 20s to 3 minutes so that first-run downloads aren't killed mid-way.
+    timeoutMs: parseInt(process.env.OCR_TIMEOUT_MS || '180000', 10),
   },
 };
 
