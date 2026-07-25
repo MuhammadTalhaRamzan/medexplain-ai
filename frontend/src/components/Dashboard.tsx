@@ -7,6 +7,7 @@ import { LabResultsTable } from './LabResultsTable';
 import { TermExplanations } from './TermExplanations';
 import { DoctorQuestions } from './DoctorQuestions';
 import { LifestyleGuidance } from './LifestyleGuidance';
+import { MedicationsCard } from './MedicationsCard';
 import { PrivacyCard } from './PrivacyCard';
 import { DisclaimerCard } from './DisclaimerCard';
 
@@ -84,25 +85,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ result, onReset }) => {
           <DoctorQuestions questions={result.doctorQuestions} />
         </div>
 
-        {/* Right Column: Lab Results Table, Term Explanations, Lifestyle Guidance & Privacy */}
+        {/* Right Column: Lab Results Table, Medications, Term Explanations, Lifestyle Guidance & Privacy */}
         <div className="col-span-12 lg:col-span-8 space-y-6 flex flex-col">
           {/* 4. Detected Lab Results Table */}
-          <LabResultsTable tests={result.detectedTests} />
+          <LabResultsTable tests={result.detectedTests} isComparison={result.isComparison} />
 
-          {/* 5. Medical Term Explanations */}
+          {/* 5. Educational Related Medications */}
+          <MedicationsCard medications={result.relatedMedications} language={result.language} />
+
+          {/* 6. Medical Term Explanations */}
           <TermExplanations explanations={result.medicalExplanations} />
 
-          {/* 6. Educational Lifestyle Guidance */}
+          {/* 7. Educational Lifestyle Guidance */}
           <LifestyleGuidance guidance={result.lifestyleGuidance} />
 
-          {/* 7. Privacy Guarantee */}
+          {/* 8. Privacy Guarantee */}
           <PrivacyCard isLocalGemmaMode={result.isLocalGemmaMode} />
 
-          {/* 8. Medical Disclaimer */}
+          {/* 9. Medical Disclaimer */}
           <DisclaimerCard />
         </div>
       </div>
     </div>
   );
 };
-

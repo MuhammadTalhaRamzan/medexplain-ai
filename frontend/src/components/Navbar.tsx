@@ -1,11 +1,16 @@
 import React from 'react';
-import { FileSpreadsheet, Home, Info, Shield, Settings, Activity } from 'lucide-react';
+import { FileSpreadsheet, Globe, GitCompare, FileText } from 'lucide-react';
+import { AppLanguage } from '../types/report';
 
 interface NavbarProps {
   currentTab: 'home' | 'about' | 'privacy' | 'settings';
   setCurrentTab: (tab: 'home' | 'about' | 'privacy' | 'settings') => void;
   onLoadSampleReport: (sampleId: string) => void;
   isLocalGemmaMode: boolean;
+  language: AppLanguage;
+  setLanguage: (lang: AppLanguage) => void;
+  isComparisonMode: boolean;
+  setIsComparisonMode: (comp: boolean) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,6 +18,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   setCurrentTab,
   onLoadSampleReport,
   isLocalGemmaMode,
+  language,
+  setLanguage,
+  isComparisonMode,
+  setIsComparisonMode,
 }) => {
   return (
     <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 sm:px-8 h-16 flex items-center justify-between shadow-xs">
@@ -33,14 +42,67 @@ export const Navbar: React.FC<NavbarProps> = ({
         </span>
       </div>
 
-      {/* Nav Links & Status Badge */}
-      <div className="flex items-center space-x-3 sm:space-x-6 text-sm font-medium text-gray-500">
+      {/* Center Mode Controls: Single vs Compare */}
+      <div className="hidden lg:flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 text-xs font-semibold">
+        <button
+          onClick={() => {
+            setIsComparisonMode(false);
+            setCurrentTab('home');
+          }}
+          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            !isComparisonMode
+              ? 'bg-white text-blue-700 shadow-xs font-bold'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          <span>Single Report</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setIsComparisonMode(true);
+            setCurrentTab('home');
+          }}
+          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            isComparisonMode
+              ? 'bg-white text-emerald-700 shadow-xs font-bold'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <GitCompare className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Compare (Before / After Medicine)</span>
+        </button>
+      </div>
+
+      {/* Right Controls & Nav Links */}
+      <div className="flex items-center space-x-2 sm:space-x-4 text-sm font-medium text-gray-500">
+        {/* Language Selector */}
+        <div className="flex items-center space-x-1 bg-blue-50 border border-blue-200 rounded-xl px-2.5 py-1 text-xs font-bold text-blue-800">
+          <Globe className="w-3.5 h-3.5 text-blue-600 mr-0.5" />
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as AppLanguage)}
+            className="bg-transparent font-bold focus:outline-none cursor-pointer text-blue-900"
+          >
+            <option value="en">🇬🇧 English</option>
+            <option value="ur-roman">🇵🇰 Roman Urdu</option>
+          </select>
+        </div>
+
+        {/* Demo Preset Selector */}
+        <button
+          onClick={() => onLoadSampleReport(isComparisonMode ? 'lipid-compare-preset' : 'cbc-report')}
+          className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl transition-colors cursor-pointer"
+        >
+          <FileSpreadsheet className="w-3.5 h-3.5 text-purple-600" />
+          <span>{isComparisonMode ? 'Demo Compare' : 'Demo Single'}</span>
+        </button>
+
         <button
           onClick={() => setCurrentTab('home')}
-          className={`py-5 text-sm font-semibold transition-colors cursor-pointer ${
-            currentTab === 'home'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'hover:text-gray-900'
+          className={`py-2 text-xs font-bold transition-colors cursor-pointer ${
+            currentTab === 'home' ? 'text-blue-600 border-b-2 border-blue-600' : 'hover:text-gray-900'
           }`}
         >
           Dashboard
@@ -48,53 +110,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         <button
           onClick={() => setCurrentTab('about')}
-          className={`py-5 text-sm font-semibold transition-colors cursor-pointer hidden sm:block ${
-            currentTab === 'about'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'hover:text-gray-900'
+          className={`py-2 text-xs font-bold transition-colors cursor-pointer hidden sm:block ${
+            currentTab === 'about' ? 'text-blue-600 border-b-2 border-blue-600' : 'hover:text-gray-900'
           }`}
         >
           About
         </button>
 
-        <button
-          onClick={() => setCurrentTab('privacy')}
-          className={`py-5 text-sm font-semibold transition-colors cursor-pointer hidden sm:block ${
-            currentTab === 'privacy'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'hover:text-gray-900'
-          }`}
-        >
-          Privacy
-        </button>
-
-        <button
-          onClick={() => setCurrentTab('settings')}
-          className={`py-5 text-sm font-semibold transition-colors cursor-pointer hidden sm:block ${
-            currentTab === 'settings'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'hover:text-gray-900'
-          }`}
-        >
-          Settings
-        </button>
-
-        {/* Demo Button */}
-        <button
-          onClick={() => onLoadSampleReport('cbc-report')}
-          className="hidden md:flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full transition-colors cursor-pointer"
-        >
-          <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
-          <span>Demo CBC Report</span>
-        </button>
-
-        {/* Local AI Gemma Badge */}
-        <div className="flex items-center bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold border border-emerald-200">
+        {/* Local AI Badge */}
+        <div className="hidden xl:flex items-center bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold border border-emerald-200">
           <span className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
-          <span>{isLocalGemmaMode ? 'LOCAL AI: GEMMA ACTIVE' : 'PRIVACY GUARANTEE'}</span>
+          <span>{isLocalGemmaMode ? 'LOCAL AI ACTIVE' : 'PRIVACY SECURE'}</span>
         </div>
       </div>
     </nav>
   );
 };
-

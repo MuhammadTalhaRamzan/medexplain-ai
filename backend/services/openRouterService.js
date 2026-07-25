@@ -1,6 +1,8 @@
 /**
  * OpenRouter Service — calls OpenRouter's /chat/completions endpoint
  * with the configured Gemma 4 model to analyze medical report text.
+ * Supports English & Roman Urdu, single reports & comparison mode,
+ * and educational related medication information.
  *
  * PRD §43, §48, §90
  */
@@ -8,7 +10,7 @@
 const fetch = require('node-fetch');
 const config = require('../config/config');
 const logger = require('../utils/logger');
-const { MASTER_SYSTEM_PROMPT } = require('../prompts/systemPrompt');
+const { buildSystemPrompt } = require('../prompts/systemPrompt');
 
 /**
  * Expected JSON response schema from the AI model.
@@ -18,6 +20,7 @@ const RESPONSE_SCHEMA = {
   reportTitle: 'string',
   reportDate: 'string',
   overallSummary: 'string',
+  comparisonSummary: 'string',
   importantFindings: [
     { id: 'string', finding: 'string', severity: 'string', iconType: 'string' },
   ],
@@ -26,9 +29,11 @@ const RESPONSE_SCHEMA = {
       id: 'string',
       testName: 'string',
       result: 'string',
+      beforeResult: 'string',
       referenceRange: 'string',
       unit: 'string',
       status: 'string',
+      trend: 'string',
       category: 'string',
     },
   ],
@@ -41,19 +46,47 @@ const RESPONSE_SCHEMA = {
       educationalContext: 'string',
     },
   ],
+  relatedMedications: [
+    {
+      id: 'string',
+      category: 'string',
+      medicationClass: 'string',
+      purpose: 'string',
+      disclaimer: 'string',
+    },
+  ],
   doctorQuestions: ['string'],
   lifestyleGuidance: ['string'],
 };
 
 /**
- * Build the analysis prompt for a given report.
+ * Build the analysis prompt for a single or comparison report.
  *
- * @param {string} reportText - Cleaned report text
- * @param {string} fileName - Original file name
+ * @param {string} reportText - Current report text (after medicine)
+ * @param {string} fileName - Current file name
+ * @param {Object} options - { language, isComparison, previousReportText, previousFileName }
  * @returns {string} Prompt to send to the AI
  */
-function buildAnalysisPrompt(reportText, fileName) {
-  return `Analyze this medical report thoroughly and return valid JSON matching the schema:
+function buildAnalysisPrompt(reportText, fileName, options = {}) {
+  const { isComparison, previousReportText, previousFileName } = options;
+
+  if (isComparison && previousReportText) {
+    return `Analyze and compare these two medical lab reports thoroughly. Include educational relatedMedications if applicable.
+    
+REPORT 1 (INITIAL / BEFORE MEDICINE):
+File Name: ${previousFileName || 'Before_Medicine_Report.txt'}
+Content:
+${previousReportText}
+
+REPORT 2 (FOLLOW-UP / AFTER MEDICINE):
+File Name: ${fileName || 'After_Medicine_Report.txt'}
+Content:
+${reportText}
+
+Return valid JSON with detectedTests comparing Before vs After values, assigning a trend ('improved', 'stable', or 'worsened') to each test item, relatedMedications, and a comparisonSummary evaluating treatment efficacy. Respond ONLY with valid JSON. Do not include markdown code block syntax.`;
+  }
+
+  return `Analyze this medical report thoroughly and return valid JSON matching the schema (including relatedMedications for educational context):
 Report Title / File Name: ${fileName || 'Uploaded Medical Report'}
 
 Raw Report Text:
@@ -65,11 +98,15 @@ Respond ONLY with valid JSON. Do not include markdown code block syntax.`;
 /**
  * Analyze a medical report using OpenRouter API.
  *
- * @param {string} reportText - Cleaned extracted text from the report
+ * @param {string} reportText - Cleaned extracted text from current report
  * @param {string} fileName - Original uploaded file name
+ * @param {Object} options - { language: 'en'|'ur-roman', isComparison: boolean, previousReportText: string, previousFileName: string }
  * @returns {Promise<Object>} Parsed analysis result
  */
-async function analyzeReport(reportText, fileName) {
+async function analyzeReport(reportText, fileName, options = {}) {
+  const language = options.language || 'en';
+  const isComparison = Boolean(options.isComparison && options.previousReportText);
+
   if (!config.openrouter.apiKey) {
     const err = new Error('OPENROUTER_API_KEY is not configured');
     err.code = 'AI_NOT_CONFIGURED';
@@ -77,7 +114,8 @@ async function analyzeReport(reportText, fileName) {
     throw err;
   }
 
-  const promptText = buildAnalysisPrompt(reportText, fileName);
+  const promptText = buildAnalysisPrompt(reportText, fileName, options);
+  const systemPrompt = buildSystemPrompt(language, isComparison);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), config.openrouter.timeoutMs);
@@ -85,6 +123,8 @@ async function analyzeReport(reportText, fileName) {
   try {
     logger.info('Calling OpenRouter API', {
       model: config.openrouter.model,
+      language,
+      isComparison,
       reportLength: reportText.length,
     });
 
@@ -99,7 +139,7 @@ async function analyzeReport(reportText, fileName) {
       body: JSON.stringify({
         model: config.openrouter.model,
         messages: [
-          { role: 'system', content: MASTER_SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: promptText },
         ],
         response_format: { type: 'json_object' },
@@ -126,7 +166,6 @@ async function analyzeReport(reportText, fileName) {
     const data = await response.json();
     const rawContent = data?.choices?.[0]?.message?.content || '{}';
 
-    // Clean potential markdown code block wrapping
     const cleanJson = rawContent
       .replace(/^```json\s*/i, '')
       .replace(/^```\s*/i, '')
@@ -137,12 +176,16 @@ async function analyzeReport(reportText, fileName) {
 
     logger.info('OpenRouter analysis completed', {
       model: config.openrouter.model,
+      language,
+      isComparison,
       reportTitle: parsed.reportTitle,
       testsFound: parsed.detectedTests?.length || 0,
     });
 
     return {
       ...parsed,
+      language,
+      isComparison,
       rawExtractedText: reportText,
       analyzedAt: new Date().toISOString(),
       modelUsed: `OpenRouter (${config.openrouter.model})`,
@@ -157,7 +200,7 @@ async function analyzeReport(reportText, fileName) {
       throw e;
     }
 
-    if (err.code) throw err; // Already an identified error
+    if (err.code) throw err;
 
     logger.error('OpenRouter request failed', { message: err.message });
     const e = new Error('Failed to communicate with AI provider');

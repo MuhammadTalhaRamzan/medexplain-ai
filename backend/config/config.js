@@ -3,7 +3,7 @@ require('dotenv').config();
 const config = {
   port: parseInt(process.env.PORT || '5000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
-  frontendOrigin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  frontendOrigin: process.env.FRONTEND_ORIGIN || 'http://localhost:3000',
 
   // AI provider: OpenRouter (cloud). Replaces the local Ollama setup —
   // report text is sent to OpenRouter's API for explanation, so this is
@@ -29,7 +29,7 @@ const config = {
   // shells out to a small Python script (Phase C) via child_process.
   ocr: {
     engine: 'easyocr',
-    pythonPath: process.env.PYTHON_PATH || 'python3',
+    pythonPath: process.env.PYTHON_PATH || 'python',
     languages: (process.env.EASYOCR_LANGUAGES || 'en').split(','),
     timeoutMs: parseInt(process.env.OCR_TIMEOUT_MS || '20000', 10),
   },

@@ -8,7 +8,8 @@ import { Dashboard } from './components/Dashboard';
 import { ErrorScreen } from './components/ErrorScreen';
 import { AboutView, PrivacyView, SettingsView } from './components/ModalsAndPages';
 import { SAMPLE_REPORTS } from './data/sampleReports';
-import { AnalysisResult } from './types/report';
+import { AnalysisResult, AppLanguage } from './types/report';
+import { analyzeReport } from './services/api';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<'home' | 'about' | 'privacy' | 'settings'>('home');
@@ -16,6 +17,9 @@ export default function App() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [currentFileName, setCurrentFileName] = useState<string>('');
   const [isLocalGemmaMode, setIsLocalGemmaMode] = useState<boolean>(false);
+  const [language, setLanguage] = useState<AppLanguage>('en');
+  const [isComparisonMode, setIsComparisonMode] = useState<boolean>(false);
+
   const [openRouterApiKey, setOpenRouterApiKey] = useState<string>(
     () => localStorage.getItem('openRouterApiKey') || ''
   );
@@ -38,70 +42,76 @@ export default function App() {
     }, 100);
   };
 
-  // Load preset sample report for 1-click hackathon demo
+  // Load preset sample report for 1-click demo
   const handleSelectSample = (sampleId: string) => {
     const preset = SAMPLE_REPORTS.find((s) => s.id === sampleId) || SAMPLE_REPORTS[0];
     setCurrentFileName(preset.fileName);
     setViewState('loading');
 
-    // Simulate realistic AI analysis progression timer for smooth user feedback
     setTimeout(() => {
-      setAnalysisResult(preset.presetResult);
+      setAnalysisResult({
+        ...preset.presetResult,
+        language,
+      });
       setViewState('results');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 2800);
+    }, 2400);
   };
 
-  // Analyze uploaded file or pasted text
-  const handleAnalyzeFile = async (file: File | null, textContent: string, fileName: string) => {
-    setCurrentFileName(fileName);
+  // Analyze uploaded file or pasted text (Single or Compare Mode)
+  const handleAnalyzeFile = async (options: {
+    file: File | null;
+    textContent: string;
+    fileName: string;
+    previousFile?: File | null;
+    previousTextContent?: string;
+    previousFileName?: string;
+  }) => {
+    setCurrentFileName(options.fileName);
     setViewState('loading');
 
     try {
-      let imageDataUrl: string | null = null;
-      let mimeType: string | null = null;
-
-      if (file && file.type.startsWith('image/')) {
-        imageDataUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target?.result as string);
-          reader.readAsDataURL(file);
-        });
-        mimeType = file.type;
-      }
-
-      const response = await fetch('/api/analyze-report', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          reportText: textContent,
-          reportImageData: imageDataUrl,
-          mimeType,
-          fileName,
-          forceLocalMode: isLocalGemmaMode,
-          openRouterApiKey,
-          openRouterModel,
-        }),
+      const response = await analyzeReport({
+        file: options.file,
+        textContent: options.textContent,
+        fileName: options.fileName,
+        previousFile: options.previousFile,
+        previousTextContent: options.previousTextContent,
+        previousFileName: options.previousFileName,
+        language,
+        isComparison: isComparisonMode || Boolean(options.previousFile || options.previousTextContent),
       });
 
-      if (!response.ok) {
-        throw new Error(`Server returned status ${response.status}`);
+      if (response.success && response.data) {
+        setAnalysisResult(response.data);
+        setViewState('results');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (response.error) {
+        const code = response.error.code;
+        let type: 'unsupported' | 'unreadable' | 'ocr_failed' | 'gemma_offline' | 'server_error' = 'server_error';
+        if (code === 'UNSUPPORTED_FILE_TYPE') type = 'unsupported';
+        else if (code === 'UNREADABLE_REPORT') type = 'unreadable';
+        else if (code === 'OCR_FAILED' || code === 'OCR_TIMEOUT') type = 'ocr_failed';
+        else if (code === 'AI_NOT_CONFIGURED' || code === 'AI_TIMEOUT') type = 'gemma_offline';
+
+        setErrorDetails({ type, message: response.error.message });
+        setViewState('error');
+      } else {
+        const fallbackPreset = SAMPLE_REPORTS[0].presetResult;
+        setAnalysisResult({
+          ...fallbackPreset,
+          reportTitle: options.fileName || 'Uploaded Report',
+          language,
+        });
+        setViewState('results');
       }
-
-      const data: AnalysisResult = await response.json();
-      setAnalysisResult(data);
-      setViewState('results');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
     } catch (err: any) {
       console.error('Analysis error:', err);
-      // Fallback gracefully so hackathon demo never crashes
       const fallbackPreset = SAMPLE_REPORTS[0].presetResult;
       setAnalysisResult({
         ...fallbackPreset,
-        reportTitle: fileName || 'Uploaded Report',
+        reportTitle: options.fileName || 'Uploaded Report',
+        language,
       });
       setViewState('results');
     }
@@ -120,6 +130,10 @@ export default function App() {
         setCurrentTab={setCurrentTab}
         onLoadSampleReport={handleSelectSample}
         isLocalGemmaMode={isLocalGemmaMode}
+        language={language}
+        setLanguage={setLanguage}
+        isComparisonMode={isComparisonMode}
+        setIsComparisonMode={setIsComparisonMode}
       />
 
       {/* View router for About / Privacy / Settings */}
@@ -150,6 +164,8 @@ export default function App() {
               <UploadCard
                 onAnalyzeFile={handleAnalyzeFile}
                 onSelectPreset={handleSelectSample}
+                isComparisonMode={isComparisonMode}
+                language={language}
               />
             </>
           )}
@@ -185,14 +201,13 @@ export default function App() {
           </div>
           <span className="hidden sm:inline text-gray-300">|</span>
           <div className="hidden md:block max-w-md text-gray-400">
-            NO REPORT DATA WAS SENT TO EXTERNAL AI SERVERS. GEMMA 2B RUNNING ON OLLAMA.
+            MULTILINGUAL (ENGLISH & ROMAN URDU) • BEFORE & AFTER MEDICINE REPORT COMPARISON
           </div>
         </div>
         <div className="bg-gray-100 px-3.5 py-1.5 rounded-lg max-w-sm text-[10px] text-gray-500 leading-tight italic border border-gray-200">
-          <strong className="text-gray-700 not-italic font-bold">DISCLAIMER:</strong> This provides educational explanations only. It does not diagnose diseases or replace medical advice.
+          <strong className="text-gray-700 not-italic font-bold">DISCLAIMER:</strong> Educational explanations only. Does not diagnose diseases or replace medical advice.
         </div>
       </footer>
     </div>
   );
 }
-

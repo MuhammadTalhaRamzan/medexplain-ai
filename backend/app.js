@@ -3,6 +3,8 @@ const cors = require('cors');
 const config = require('./config/config');
 const logger = require('./utils/logger');
 const healthRoutes = require('./routes/health');
+const analyzeRoutes = require('./routes/analyze');
+const uploadRoutes = require('./routes/upload');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -25,8 +27,8 @@ app.use((req, res, next) => {
 });
 
 app.use('/', healthRoutes);
-
-// Upload and analyze routes are added in Phase B/E.
+app.use('/', analyzeRoutes);
+app.use('/', uploadRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

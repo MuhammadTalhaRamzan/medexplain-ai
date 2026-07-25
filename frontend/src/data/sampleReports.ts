@@ -2,6 +2,147 @@ import { SampleReportPreset } from '../types/report';
 
 export const SAMPLE_REPORTS: SampleReportPreset[] = [
   {
+    id: 'lipid-compare-preset',
+    title: 'Lipid Profile — Before vs After Statin Medication',
+    category: 'Medication Comparison',
+    description: 'Compares initial cholesterol levels before medicine with follow-up levels 3 months after starting Statin treatment.',
+    fileName: 'FollowUp_Lipid_Panel_After_Medicine.pdf',
+    fileContent: `CARDIO HEALTH CLINIC - FOLLOW-UP REPORT (AFTER MEDICINE)
+Date: 2026-07-20
+Total Cholesterol: 178 mg/dL (Ref: < 200) NORMAL
+LDL Cholesterol: 92 mg/dL (Ref: < 100) NORMAL
+HDL Cholesterol: 54 mg/dL (Ref: > 40) OPTIMAL
+Triglycerides: 125 mg/dL (Ref: < 150) NORMAL`,
+    isComparisonPreset: true,
+    previousFileName: 'Initial_Lipid_Panel_Before_Medicine.pdf',
+    previousFileContent: `CARDIO HEALTH CLINIC - INITIAL REPORT (BEFORE MEDICINE)
+Date: 2026-04-10
+Total Cholesterol: 245 mg/dL (Ref: < 200) HIGH
+LDL Cholesterol: 165 mg/dL (Ref: < 100) HIGH
+HDL Cholesterol: 48 mg/dL (Ref: > 40) NORMAL
+Triglycerides: 160 mg/dL (Ref: < 150) BORDERLINE`,
+    presetResult: {
+      reportTitle: 'Lipid Profile — Before vs After Statin Medication',
+      reportDate: '2026-07-20',
+      overallSummary: 'Great progress! Comparing your report BEFORE taking medicine with your FOLLOW-UP report AFTER treatment shows significant improvement across all cholesterol markers. Your LDL ("bad") cholesterol has dropped into the ideal target range.',
+      comparisonSummary: 'Medication Efficacy Analysis: Total Cholesterol decreased from 245 to 178 mg/dL (Improved). LDL Cholesterol dropped from 165 to 92 mg/dL (Improved to normal). Triglycerides reduced from 160 to 125 mg/dL (Improved). HDL protective cholesterol increased slightly from 48 to 54 mg/dL.',
+      importantFindings: [
+        {
+          id: 'f1',
+          finding: 'LDL Cholesterol dropped dramatically from 165 mg/dL to 92 mg/dL, returning to normal healthy range.',
+          severity: 'success',
+          iconType: 'check',
+        },
+        {
+          id: 'f2',
+          finding: 'Total Cholesterol decreased by 67 points (245 → 178 mg/dL), confirming effective medication response.',
+          severity: 'success',
+          iconType: 'check',
+        },
+        {
+          id: 'f3',
+          finding: 'Triglycerides improved from 160 mg/dL (borderline) down to 125 mg/dL (normal).',
+          severity: 'success',
+          iconType: 'check',
+        },
+      ],
+      detectedTests: [
+        {
+          id: 't1',
+          testName: 'LDL Cholesterol (Bad)',
+          result: '92',
+          beforeResult: '165',
+          unit: 'mg/dL',
+          referenceRange: '< 100',
+          status: 'normal',
+          trend: 'improved',
+          category: 'Cardiovascular',
+        },
+        {
+          id: 't2',
+          testName: 'Total Cholesterol',
+          result: '178',
+          beforeResult: '245',
+          unit: 'mg/dL',
+          referenceRange: '< 200',
+          status: 'normal',
+          trend: 'improved',
+          category: 'Cardiovascular',
+        },
+        {
+          id: 't3',
+          testName: 'Triglycerides',
+          result: '125',
+          beforeResult: '160',
+          unit: 'mg/dL',
+          referenceRange: '< 150',
+          status: 'normal',
+          trend: 'improved',
+          category: 'Cardiovascular',
+        },
+        {
+          id: 't4',
+          testName: 'HDL Cholesterol (Good)',
+          result: '54',
+          beforeResult: '48',
+          unit: 'mg/dL',
+          referenceRange: '> 40',
+          status: 'normal',
+          trend: 'improved',
+          category: 'Cardiovascular',
+        },
+      ],
+      medicalExplanations: [
+        {
+          id: 'e1',
+          testName: 'LDL Cholesterol',
+          purpose: 'Measures bad cholesterol carrying fats to blood vessels.',
+          plainLanguageExplanation: 'Your LDL level reduced from 165 to 92 mg/dL. This shows your cholesterol medicine worked effectively.',
+          educationalContext: 'Maintaining LDL below 100 mg/dL protects arterial health over the long term.',
+        },
+        {
+          id: 'e2',
+          testName: 'Triglycerides',
+          purpose: 'Measures blood fats from dietary energy.',
+          plainLanguageExplanation: 'Decreased from 160 to 125 mg/dL into normal territory.',
+          educationalContext: 'Lower triglycerides reduce metabolic and cardiovascular strain.',
+        },
+      ],
+      relatedMedications: [
+        {
+          id: 'm1',
+          category: 'Cholesterol Lowering',
+          medicationClass: 'HMG-CoA Reductase Inhibitors (Statins e.g., Atorvastatin 20mg, Rosuvastatin)',
+          purpose: 'Reduces liver cholesterol synthesis, lowering LDL cholesterol and blood vessel plaque build-up.',
+          disclaimer: 'Must be prescribed and monitored by a licensed physician.',
+        },
+        {
+          id: 'm2',
+          category: 'Triglyceride Support',
+          medicationClass: 'Omega-3 Fatty Acids / Dietary Support',
+          purpose: 'Supports normal triglyceride clearance alongside heart-healthy diet.',
+          disclaimer: 'Requires doctor advice for appropriate dosage.',
+        },
+      ],
+      doctorQuestions: [
+        'Should I continue my current statin dosage given this excellent response?',
+        'When should we schedule our next routine lipid follow-up test?',
+        'Are any lifestyle modifications recommended alongside my medication?',
+      ],
+      lifestyleGuidance: [
+        'Continue taking your prescribed medication consistently as directed by your physician.',
+        'Maintain a heart-healthy diet with oats, olive oil, and fresh vegetables.',
+        'Engage in 30 minutes of daily physical activity like brisk walking.',
+        'Schedule your routine follow-up appointment with your doctor.',
+      ],
+      rawExtractedText: `Cardio Health Clinic Follow Up Report... LDL 92 (before 165)... Total Cholesterol 178 (before 245)...`,
+      analyzedAt: new Date().toISOString(),
+      isLocalGemmaMode: true,
+      isComparison: true,
+      language: 'en',
+    },
+  },
+  {
     id: 'cbc-report',
     title: 'Complete Blood Count (CBC) with Differential',
     category: 'Hematology',
@@ -252,130 +393,6 @@ Non-HDL Cholesterol:  163 mg/dL    (Ref: < 130 mg/dL)    HIGH`,
         'Discuss these blood lipids during your upcoming doctor appointment.'
       ],
       rawExtractedText: `Cardio Health Clinic... Total Cholesterol 215, LDL 135, HDL 52...`,
-      analyzedAt: new Date().toISOString(),
-      isLocalGemmaMode: true
-    }
-  },
-  {
-    id: 'metabolic-panel',
-    title: 'Comprehensive Metabolic Panel (CMP)',
-    category: 'General Health',
-    description: 'Evaluates electrolyte balance, kidney function, liver enzymes, and blood glucose.',
-    fileName: 'CMP_Report_Lab.pdf',
-    fileContent: `METROPOLITAN GENERAL DIAGNOSTICS
-COMPREHENSIVE METABOLIC PANEL (CMP)
-Date: 2026-07-01
-
-Glucose (Fasting):    104 mg/dL    (Ref: 70 - 99 mg/dL)    BORDERLINE HIGH
-BUN:                  16 mg/dL     (Ref: 7 - 20 mg/dL)     NORMAL
-Creatinine:           0.9 mg/dL    (Ref: 0.6 - 1.2 mg/dL)  NORMAL
-eGFR:                 98 mL/min    (Ref: > 60 mL/min)      NORMAL
-Sodium:               139 mmol/L   (Ref: 135 - 145 mmol/L) NORMAL
-Potassium:            4.2 mmol/L   (Ref: 3.5 - 5.1 mmol/L) NORMAL
-Chloride:             101 mmol/L   (Ref: 96 - 106 mmol/L)  NORMAL
-Calcium:              9.4 mg/dL    (Ref: 8.5 - 10.2 mg/dL) NORMAL
-ALT (SGPT):           24 U/L       (Ref: 7 - 56 U/L)       NORMAL
-AST (SGOT):           22 U/L       (Ref: 8 - 48 U/L)       NORMAL`,
-    presetResult: {
-      reportTitle: 'Comprehensive Metabolic Panel (CMP)',
-      reportDate: '2026-07-01',
-      overallSummary: 'Your metabolic panel demonstrates excellent kidney function, normal liver enzymes, and balanced electrolytes. Fasting glucose is slightly above 99 mg/dL in the borderline zone.',
-      importantFindings: [
-        {
-          id: 'f1',
-          finding: 'Kidney indicators (Creatinine 0.9 mg/dL, BUN 16 mg/dL, eGFR 98) show healthy filtering capacity.',
-          severity: 'success',
-          iconType: 'check'
-        },
-        {
-          id: 'f2',
-          finding: 'Electrolyte balance (Sodium, Potassium, Chloride, Calcium) is in optimal standard range.',
-          severity: 'success',
-          iconType: 'check'
-        },
-        {
-          id: 'f3',
-          finding: 'Fasting Glucose (104 mg/dL) is slightly above the 99 mg/dL upper threshold for fasting normal limits.',
-          severity: 'warning',
-          iconType: 'alert'
-        }
-      ],
-      detectedTests: [
-        {
-          id: 't1',
-          testName: 'Fasting Glucose',
-          result: '104',
-          unit: 'mg/dL',
-          referenceRange: '70 - 99',
-          status: 'borderline',
-          category: 'Metabolic'
-        },
-        {
-          id: 't2',
-          testName: 'Creatinine',
-          result: '0.9',
-          unit: 'mg/dL',
-          referenceRange: '0.6 - 1.2',
-          status: 'normal',
-          category: 'Kidney'
-        },
-        {
-          id: 't3',
-          testName: 'eGFR',
-          result: '98',
-          unit: 'mL/min',
-          referenceRange: '> 60',
-          status: 'normal',
-          category: 'Kidney'
-        },
-        {
-          id: 't4',
-          testName: 'Potassium',
-          result: '4.2',
-          unit: 'mmol/L',
-          referenceRange: '3.5 - 5.1',
-          status: 'normal',
-          category: 'Electrolytes'
-        },
-        {
-          id: 't5',
-          testName: 'ALT (Liver Enzyme)',
-          result: '24',
-          unit: 'U/L',
-          referenceRange: '7 - 56',
-          status: 'normal',
-          category: 'Liver'
-        }
-      ],
-      medicalExplanations: [
-        {
-          id: 'e1',
-          testName: 'Fasting Glucose',
-          purpose: 'Measures blood sugar level after fasting.',
-          plainLanguageExplanation: 'Blood sugar supply in circulation. 104 mg/dL is slightly above the strict 99 fasting limit.',
-          educationalContext: 'Fasting glucose can temporarily fluctuate based on fasting length, stress, hydration, or sleep. An HbA1c test is often used to view 3-month averages.'
-        },
-        {
-          id: 'e2',
-          testName: 'Creatinine & eGFR',
-          purpose: 'Measures kidney waste clearance effectiveness.',
-          plainLanguageExplanation: 'Your kidneys filter waste smoothly.',
-          educationalContext: 'A result of 0.9 mg/dL with eGFR 98 indicates very good kidney function.'
-        }
-      ],
-      doctorQuestions: [
-        'Does my fasting glucose level of 104 mg/dL warrant an HbA1c test?',
-        'Could recent fasting length or evening food intake have influenced this blood glucose reading?',
-        'Are there any specific dietary guidelines you suggest for blood sugar stability?'
-      ],
-      lifestyleGuidance: [
-        'Focus on complex carbohydrates with high fiber content (whole grains, vegetables, quinoa).',
-        'Maintain regular physical activity after meals to support natural insulin sensitivity.',
-        'Stay well hydrated with fresh water throughout the day.',
-        'Aim for consistent, restful sleep routines.',
-        'Review these CMP results with your healthcare provider.'
-      ],
-      rawExtractedText: `Comprehensive Metabolic Panel... Glucose 104, Creatinine 0.9, eGFR 98...`,
       analyzedAt: new Date().toISOString(),
       isLocalGemmaMode: true
     }

@@ -3,10 +3,13 @@ const router = express.Router();
 const upload = require('../middleware/upload');
 const { analyzeReport } = require('../controllers/analyzeController');
 
-// POST /analyze — accepts multipart file upload or JSON with text
+// POST /analyze — accepts single or dual file upload (file + previousFile) or JSON body with text
 router.post(
   '/analyze',
-  upload.single('file'),
+  upload.fields([
+    { name: 'file', maxCount: 1 },
+    { name: 'previousFile', maxCount: 1 },
+  ]),
   analyzeReport
 );
 
