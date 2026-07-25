@@ -27,23 +27,10 @@ function clean(rawText) {
   // Replace multiple newlines with double newline (paragraph break)
   text = text.replace(/\n{3,}/g, '\n\n');
 
-  // Remove lines that are just whitespace or punctuation
+  // Remove lines that are just whitespace or punctuation (but keep meaningful short lines)
   text = text
     .split('\n')
-    .filter((line) => line.trim().length > 0 && !/^[\s\-_=*•·]+$/.test(line))
-    .join('\n');
-
-  // Remove broken character artifacts (e.g., single characters on their own)
-  text = text
-    .split('\n')
-    .map((line) => {
-      // If a line is just a single character (likely OCR noise), skip it
-      if (line.trim().length <= 1 && /^[a-zA-Z0-9]$/.test(line.trim())) {
-        return '';
-      }
-      return line;
-    })
-    .filter((line) => line.length > 0)
+    .filter((line) => line.trim().length > 0)
     .join('\n');
 
   // Remove duplicate consecutive lines

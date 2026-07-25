@@ -1,11 +1,10 @@
 import React from 'react';
-import { FileSpreadsheet, Globe, GitCompare, FileText } from 'lucide-react';
+import { Globe, GitCompare, FileText } from 'lucide-react';
 import { AppLanguage } from '../types/report';
 
 interface NavbarProps {
   currentTab: 'home' | 'about' | 'privacy' | 'settings';
   setCurrentTab: (tab: 'home' | 'about' | 'privacy' | 'settings') => void;
-  onLoadSampleReport: (sampleId: string) => void;
   isLocalGemmaMode: boolean;
   language: AppLanguage;
   setLanguage: (lang: AppLanguage) => void;
@@ -16,7 +15,6 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   currentTab,
   setCurrentTab,
-  onLoadSampleReport,
   isLocalGemmaMode,
   language,
   setLanguage,
@@ -89,15 +87,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <option value="ur-roman">🇵🇰 Roman Urdu</option>
           </select>
         </div>
-
-        {/* Demo Preset Selector */}
-        <button
-          onClick={() => onLoadSampleReport(isComparisonMode ? 'lipid-compare-preset' : 'cbc-report')}
-          className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl transition-colors cursor-pointer"
-        >
-          <FileSpreadsheet className="w-3.5 h-3.5 text-purple-600" />
-          <span>{isComparisonMode ? 'Demo Compare' : 'Demo Single'}</span>
-        </button>
 
         <button
           onClick={() => setCurrentTab('home')}

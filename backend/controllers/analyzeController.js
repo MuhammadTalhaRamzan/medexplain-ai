@@ -98,7 +98,7 @@ async function analyzeReport(req, res) {
     const cleanedText = textCleaner.clean(extractedText);
     const cleanedPreviousText = extractedPreviousText ? textCleaner.clean(extractedPreviousText) : '';
 
-    if (!cleanedText || cleanedText.length < 10) {
+    if (!cleanedText || cleanedText.length < 3) {
       if (currentFilePath) deleteFile(currentFilePath);
       if (previousFilePath) deleteFile(previousFilePath);
 

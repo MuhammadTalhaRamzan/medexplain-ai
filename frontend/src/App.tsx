@@ -7,7 +7,6 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { Dashboard } from './components/Dashboard';
 import { ErrorScreen } from './components/ErrorScreen';
 import { AboutView, PrivacyView, SettingsView } from './components/ModalsAndPages';
-import { SAMPLE_REPORTS } from './data/sampleReports';
 import { AnalysisResult, AppLanguage } from './types/report';
 import { analyzeReport } from './services/api';
 
@@ -40,22 +39,6 @@ export default function App() {
         uploadElem.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
-  };
-
-  // Load preset sample report for 1-click demo
-  const handleSelectSample = (sampleId: string) => {
-    const preset = SAMPLE_REPORTS.find((s) => s.id === sampleId) || SAMPLE_REPORTS[0];
-    setCurrentFileName(preset.fileName);
-    setViewState('loading');
-
-    setTimeout(() => {
-      setAnalysisResult({
-        ...preset.presetResult,
-        language,
-      });
-      setViewState('results');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 2400);
   };
 
   // Analyze uploaded file or pasted text (Single or Compare Mode)
@@ -97,23 +80,16 @@ export default function App() {
         setErrorDetails({ type, message: response.error.message });
         setViewState('error');
       } else {
-        const fallbackPreset = SAMPLE_REPORTS[0].presetResult;
-        setAnalysisResult({
-          ...fallbackPreset,
-          reportTitle: options.fileName || 'Uploaded Report',
-          language,
-        });
-        setViewState('results');
+        setErrorDetails({ type: 'server_error', message: 'No analysis data returned from the server.' });
+        setViewState('error');
       }
     } catch (err: any) {
       console.error('Analysis error:', err);
-      const fallbackPreset = SAMPLE_REPORTS[0].presetResult;
-      setAnalysisResult({
-        ...fallbackPreset,
-        reportTitle: options.fileName || 'Uploaded Report',
-        language,
+      setErrorDetails({
+        type: 'server_error',
+        message: err?.message || 'Failed to connect to the analysis server.',
       });
-      setViewState('results');
+      setViewState('error');
     }
   };
 
@@ -128,7 +104,6 @@ export default function App() {
       <Navbar
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
-        onLoadSampleReport={handleSelectSample}
         isLocalGemmaMode={isLocalGemmaMode}
         language={language}
         setLanguage={setLanguage}
@@ -158,12 +133,10 @@ export default function App() {
             <>
               <HeroSection
                 onScrollToUpload={scrollToUpload}
-                onSelectSample={handleSelectSample}
                 onLearnMore={() => setCurrentTab('about')}
               />
               <UploadCard
                 onAnalyzeFile={handleAnalyzeFile}
-                onSelectPreset={handleSelectSample}
                 isComparisonMode={isComparisonMode}
                 language={language}
               />
