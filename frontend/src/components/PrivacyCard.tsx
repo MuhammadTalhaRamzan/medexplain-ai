@@ -16,21 +16,21 @@ export const PrivacyCard: React.FC<PrivacyCardProps> = () => {
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-xs font-bold uppercase tracking-wider text-blue-400">
-                Secure Local Analysis
+                Secure Cloud Analysis
               </span>
               <span className="px-2 py-0.5 text-[10px] font-bold bg-green-500/20 text-green-300 rounded border border-green-500/30">
                 Gemma Active
               </span>
             </div>
             <p className="text-xs sm:text-sm text-gray-300 mt-1 leading-relaxed">
-              No report data was sent to external AI servers. Gemma 2B model running locally on Ollama.
+              Report analyzed via OpenRouter with Gemma 4 AI model. Temporary processing only—no data stored on external servers.
             </p>
           </div>
         </div>
 
         <div className="flex items-center space-x-2 text-[11px] font-mono text-gray-400 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-700 flex-shrink-0">
           <Cpu className="w-3.5 h-3.5 text-blue-400" />
-          <span>Local Engine: Gemma 2B</span>
+          <span>Engine: Gemma 4 26B</span>
         </div>
       </div>
     </div>
