@@ -1,0 +1,3 @@
+# Used by the EasyOCR subprocess the Node backend shells out to (Phase C).
+# Install with: pip install -r requirements.txt
+easyocr>=1.7.1

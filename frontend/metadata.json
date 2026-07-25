@@ -1,0 +1,6 @@
+{
+  "name": "MedExplain AI",
+  "description": "Understand Your Medical Reports with Privacy-First AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
